@@ -1,9 +1,9 @@
 <template>
-  <div>
+  <div class="tag-picker">
     <div class="row" style="margin-bottom:8px">
       <span v-for="tag in modelValue" :key="tag.name + tag.type" class="tag">
         {{ tag.name }}
-        <button type="button" @click="remove(tag)">×</button>
+        <button type="button" class="icon-btn" aria-label="移除标签" @click="remove(tag)">×</button>
       </span>
     </div>
     <input

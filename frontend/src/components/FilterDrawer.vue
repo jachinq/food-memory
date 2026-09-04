@@ -1,11 +1,13 @@
 <template>
-  <div v-if="open" class="sheet" @click.self="$emit('close')">
-    <div class="sheet-body">
-      <h3>筛选</h3>
-      <FilterFields :status="status" :tag="tag" :cooked="cooked" :success="success" @update:status="$emit('update:status', $event)" @update:tag="$emit('update:tag', $event)" @update:cooked="$emit('update:cooked', $event)" @update:success="$emit('update:success', $event)" />
-      <button type="button" class="btn btn-primary" style="margin-top:12px" @click="$emit('close')">完成</button>
+  <Transition name="sheet">
+    <div v-if="open" class="sheet" @click.self="$emit('close')">
+      <div class="sheet-body">
+        <h3>筛选</h3>
+        <FilterFields :status="status" :tag="tag" :cooked="cooked" :success="success" @update:status="$emit('update:status', $event)" @update:tag="$emit('update:tag', $event)" @update:cooked="$emit('update:cooked', $event)" @update:success="$emit('update:success', $event)" />
+        <button type="button" class="btn btn-primary" style="margin-top:12px" @click="$emit('close')">收起</button>
+      </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <script setup lang="ts">

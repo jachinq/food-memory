@@ -1,12 +1,14 @@
 <template>
-  <main class="page" style="max-width:420px;padding-top:12vh">
-    <h1 class="brand">食忆</h1>
-    <p class="muted">此部署开启了访问口令。</p>
-    <form class="group" @submit.prevent="unlock">
-      <label class="field"><span>访问口令</span><input v-model="token" type="password" /></label>
-      <p v-if="error">{{ error }}</p>
-      <button class="btn btn-primary" type="submit">进入</button>
-    </form>
+  <main class="unlock-page">
+    <div class="unlock-card">
+      <h1 class="brand">食忆<small>PRIVATE KITCHEN</small></h1>
+      <p class="muted">这本账上了锁。输入口令，掀开封面。</p>
+      <form @submit.prevent="unlock">
+        <label class="field"><span>访问口令</span><input v-model="token" type="password" autocomplete="current-password" /></label>
+        <p v-if="error" class="muted">{{ error }}</p>
+        <button class="btn btn-primary" type="submit">掀开</button>
+      </form>
+    </div>
   </main>
 </template>
 

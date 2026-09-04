@@ -1,6 +1,7 @@
 <template>
-  <router-link class="card dish-card" :to="`/dishes/${dish.id}`">
+  <router-link class="dish-card" :to="`/dishes/${dish.id}`" :style="{ '--i': index }">
     <div class="thumb">
+      <span class="tape" aria-hidden="true"></span>
       <img v-if="src" :src="src" :alt="dish.name" />
       <div v-else class="placeholder">菜</div>
     </div>
@@ -24,6 +25,6 @@ import type { Dish } from '../types'
 import { dishCover, formatDate } from '../types'
 import StatusBadge from './StatusBadge.vue'
 
-const props = defineProps<{ dish: Dish }>()
+const props = defineProps<{ dish: Dish; index?: number }>()
 const src = computed(() => dishCover(props.dish))
 </script>

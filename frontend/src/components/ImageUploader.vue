@@ -2,7 +2,7 @@
   <label class="uploader">
     <input type="file" accept="image/jpeg,image/png,image/webp" hidden @change="onFile" />
     <img v-if="preview" :src="preview" alt="预览" />
-    <span v-else class="muted">点击上传图片，支持拍照</span>
+    <span v-else class="muted">贴一张照片，或直接拍照</span>
   </label>
 </template>
 

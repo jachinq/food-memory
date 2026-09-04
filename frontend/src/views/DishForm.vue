@@ -1,8 +1,9 @@
 <template>
   <form @submit.prevent="save">
-    <h1 class="section-title">{{ isEdit ? '编辑菜品' : '新增菜品' }}</h1>
+    <p class="section-kicker">{{ isEdit ? 'Revise' : 'New page' }}</p>
+    <h1 class="section-title">{{ isEdit ? '改这道菜' : '记一道新菜' }}</h1>
     <section class="group">
-      <h2>1. 基础信息</h2>
+      <h2>基础</h2>
       <div class="form-grid">
         <div>
           <label class="field"><span>菜名 *</span><input v-model="form.name" required /></label>
@@ -17,30 +18,32 @@
       </div>
     </section>
     <section class="group">
-      <h2>2. 来源信息</h2>
+      <h2>从哪看来的</h2>
       <label class="field"><span>来源链接</span><input v-model="form.source_url" /></label>
       <label class="field"><span>来源平台</span><input v-model="form.source_platform" placeholder="小红书 / 抖音 / B站" /></label>
     </section>
     <section class="group">
-      <h2>3. 分类信息</h2>
+      <h2>怎么想起它</h2>
       <label class="field"><span>主要食材</span><input v-model="form.main_ingredients" placeholder="鸡肉,豆腐" /></label>
       <label class="field"><span>口味</span><input v-model="form.taste" placeholder="甜辣" /></label>
       <label class="field"><span>场景</span><input v-model="form.scene" placeholder="下饭" /></label>
       <div class="field"><span>标签</span><TagSelector v-model="form.tags as { name: string; type: string }[]" /></div>
     </section>
     <section class="group">
-      <h2>4. 制作信息</h2>
+      <h2>上手难度</h2>
       <div class="form-grid">
         <label class="field"><span>难度 1-5</span><input v-model.number="form.difficulty" type="number" min="1" max="5" /></label>
         <label class="field"><span>耗时（分钟）</span><input v-model.number="form.cook_time_minutes" type="number" min="0" /></label>
       </div>
     </section>
     <section class="group">
-      <h2>5. 备注信息</h2>
+      <h2>随手记</h2>
       <label class="field"><span>备注</span><textarea v-model="form.note" rows="4" /></label>
     </section>
     <p v-if="error" class="muted">{{ error }}</p>
-    <button class="btn btn-primary" type="submit">保存</button>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">写入账本</button>
+    </div>
   </form>
 </template>
 

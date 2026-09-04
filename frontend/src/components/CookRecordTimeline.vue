@@ -4,12 +4,12 @@
       <div>
         <img
           v-if="item.photos?.[0]"
+          class="timeline-thumb"
           :src="item.photos[0].thumbnail_url || item.photos[0].file_url"
           alt=""
-          style="width:100%;height:72px;object-fit:cover;border-radius:10px;cursor:pointer"
           @click="$emit('preview', item.photos![0].file_url)"
         />
-        <div v-else class="placeholder" style="height:72px;border-radius:10px">记</div>
+        <div v-else class="placeholder timeline-thumb">记</div>
       </div>
       <div>
         <div class="row">

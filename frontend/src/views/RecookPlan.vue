@@ -1,10 +1,11 @@
 <template>
   <div>
+    <p class="section-kicker">Replay</p>
     <h1 class="section-title">复做清单</h1>
     <section>
       <h2 class="section-title">计划中</h2>
       <div v-if="active.length" class="dish-grid">
-        <article v-for="plan in active" :key="plan.id" class="card" style="padding:14px">
+        <article v-for="plan in active" :key="plan.id" class="card plan-card">
           <h3>{{ plan.dish?.name || '菜品' }}</h3>
           <p class="muted">计划日期 {{ plan.planned_date?.slice(0, 10) || '未定' }}</p>
           <div class="row">
@@ -24,7 +25,7 @@
     <section>
       <h2 class="section-title">已完成</h2>
       <EmptyState v-if="!completed.length" title="还没有完成的计划" text="做完后点完成，并顺手记一次制作。" />
-      <ul v-else>
+      <ul v-else class="completed-list">
         <li v-for="plan in completed" :key="plan.id">{{ plan.dish?.name }} · {{ plan.completed_at?.slice(0,10) }}</li>
       </ul>
     </section>

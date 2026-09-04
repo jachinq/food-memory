@@ -1,6 +1,6 @@
 <template>
   <aside class="filter-side pc-only">
-    <h3>筛选</h3>
+    <h3>筛一筛</h3>
     <FilterFields
       :status="status"
       :tag="tag"

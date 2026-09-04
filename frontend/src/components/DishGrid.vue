@@ -1,6 +1,6 @@
 <template>
   <div v-if="items.length" class="dish-grid">
-    <DishCard v-for="dish in items" :key="dish.id" :dish="dish" />
+    <DishCard v-for="(dish, i) in items" :key="dish.id" :dish="dish" :index="i" />
   </div>
   <EmptyState v-else :title="emptyTitle" :text="emptyText" />
 </template>

@@ -1,41 +1,47 @@
 <template>
-  <div v-if="loading" class="muted">正在翻开记忆...</div>
-  <template v-else>
-    <section class="stats">
+  <div v-if="loading" class="skeleton" aria-hidden="true"></div>
+  <div v-else class="home-page">
+    <section class="ledger" aria-label="记忆概览">
       <div class="stat"><span>总菜品</span><b>{{ data.stats.total_dishes }}</b></div>
       <div class="stat"><span>已做</span><b>{{ data.stats.cooked_count }}</b></div>
       <div class="stat"><span>成功</span><b>{{ data.stats.success_count }}</b></div>
-      <div class="stat"><span>本月制作</span><b>{{ data.stats.month_cook_count }}</b></div>
+      <div class="stat"><span>本月</span><b>{{ data.stats.month_cook_count }}</b></div>
     </section>
 
-    <article v-if="data.random_old" class="card hero-card" style="margin-bottom:24px">
-      <img v-if="data.random_old.cover_image_url" :src="data.random_old.cover_image_url" :alt="data.random_old.name" />
-      <div v-else class="placeholder">忆</div>
+    <article v-if="data.random_old" class="card hero-card">
+      <div class="visual">
+        <span class="stamp">今日抽菜</span>
+        <img v-if="data.random_old.cover_image_url" :src="data.random_old.cover_image_url" :alt="data.random_old.name" />
+        <div v-else class="placeholder">忆</div>
+      </div>
       <div class="copy">
-        <p class="muted">今天想起这道菜</p>
+        <p class="section-kicker">不知道吃什么</p>
         <h2 class="section-title">{{ data.random_old.name }}</h2>
-        <p>不知道吃什么时，从记忆库里抽一道旧菜。</p>
-        <router-link class="btn btn-primary" :to="`/dishes/${data.random_old.id}`">看看它</router-link>
+        <p class="muted">从旧账本里抽出一道还记得味道的菜。</p>
+        <router-link class="btn btn-primary" :to="`/dishes/${data.random_old.id}`">翻开这页</router-link>
       </div>
     </article>
-    <EmptyState v-else title="高评分旧菜还不多" text="继续记录几次后我就能帮你回忆啦。" />
+    <EmptyState v-else title="高评分旧菜还不多" text="再记几次，这里就会替你翻出一道旧菜。" />
 
     <div class="home-split">
       <section>
+        <p class="section-kicker">Recent</p>
         <h2 class="section-title">最近做过</h2>
         <DishGrid :items="data.recent" empty-title="还没有做过菜" empty-text="做完后回来记一笔，首页就会亮起来。" />
       </section>
       <section>
-        <h2 class="section-title">很久没做但评分高</h2>
+        <p class="section-kicker">Overdue</p>
+        <h2 class="section-title">很久没做</h2>
         <DishGrid :items="data.overdue_high_rating" empty-title="暂时没有推荐" empty-text="评分 4 分以上且 30 天没做的菜会出现在这里。" />
       </section>
     </div>
 
-    <section>
+    <section class="home-block">
+      <p class="section-kicker">Wishlist</p>
       <h2 class="section-title">想做清单</h2>
-      <DishGrid :items="data.want_to_cook" empty-title="想做清单是空的" empty-text="刷到想复刻的菜，先存进来。" />
+      <DishGrid :items="data.want_to_cook" empty-title="想做清单是空的" empty-text="刷到想复刻的菜，先夹进这本账里。" />
     </section>
-  </template>
+  </div>
 </template>
 
 <script setup lang="ts">
