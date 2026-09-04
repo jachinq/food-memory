@@ -65,11 +65,12 @@ func (r *DishRepo) List(q model.DishListQuery) ([]model.Dish, int64, error) {
 		db = db.Where("status = ?", q.Status)
 	}
 	if q.Tag != "" {
+		tagLike := "%" + q.Tag + "%"
 		db = db.Where(`id IN (
 			SELECT dt.dish_id FROM dish_tags dt
 			JOIN tags t ON t.id = dt.tag_id AND t.deleted_at IS NULL
-			WHERE t.name = ? OR CAST(t.id AS TEXT) = ?
-		)`, q.Tag, q.Tag)
+			WHERE t.name ILIKE ? OR CAST(t.id AS TEXT) = ?
+		)`, tagLike, q.Tag)
 	}
 	if q.Cooked != nil {
 		if *q.Cooked {

@@ -63,4 +63,10 @@ watch(() => route.query.keyword, (v) => {
   keyword.value = String(v || '')
   reload()
 })
+watch([status, cooked, success], reload)
+let tagTimer = 0
+watch(tag, () => {
+  window.clearTimeout(tagTimer)
+  tagTimer = window.setTimeout(reload, 300)
+})
 </script>

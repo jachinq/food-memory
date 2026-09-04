@@ -1,9 +1,20 @@
 <template>
-  <div>
-    <p class="section-kicker">Replay</p>
-    <h1 class="section-title">复做清单</h1>
-    <section>
-      <h2 class="section-title">计划中</h2>
+  <div class="replay-page">
+    <header class="page-intro">
+      <p class="section-kicker">Replay</p>
+      <h1 class="section-title">复做清单</h1>
+      <p class="muted">计划、建议、完成各记一章，互不掺在一起。</p>
+    </header>
+
+    <section class="board" data-tone="chili" aria-labelledby="recook-active-title">
+      <header class="board-head">
+        <span class="board-mark" aria-hidden="true">壹</span>
+        <div>
+          <p class="section-kicker">Queued</p>
+          <h2 id="recook-active-title" class="section-title">计划中</h2>
+        </div>
+        <p class="board-meta">{{ active.length }} 道待做</p>
+      </header>
       <div v-if="active.length" class="dish-grid">
         <article v-for="plan in active" :key="plan.id" class="card plan-card">
           <h3>{{ plan.dish?.name || '菜品' }}</h3>
@@ -18,15 +29,34 @@
       </div>
       <EmptyState v-else title="还没有复做计划" text="在菜品详情点「想再做」，就会出现在这里。" />
     </section>
-    <section>
-      <h2 class="section-title">本周建议</h2>
+
+    <section class="board" data-tone="copper" aria-labelledby="recook-suggest-title">
+      <header class="board-head">
+        <span class="board-mark" aria-hidden="true">贰</span>
+        <div>
+          <p class="section-kicker">Suggest</p>
+          <h2 id="recook-suggest-title" class="section-title">本周建议</h2>
+        </div>
+        <p class="board-meta">{{ suggest.length }} 道高分旧菜</p>
+      </header>
       <DishGrid :items="suggest" empty-title="暂时没有建议" empty-text="高评分且很久没做的菜会作为本周建议。" />
     </section>
-    <section>
-      <h2 class="section-title">已完成</h2>
+
+    <section class="board" data-tone="moss" aria-labelledby="recook-done-title">
+      <header class="board-head">
+        <span class="board-mark" aria-hidden="true">叁</span>
+        <div>
+          <p class="section-kicker">Done</p>
+          <h2 id="recook-done-title" class="section-title">已完成</h2>
+        </div>
+        <p class="board-meta">{{ completed.length }} 道</p>
+      </header>
       <EmptyState v-if="!completed.length" title="还没有完成的计划" text="做完后点完成，并顺手记一次制作。" />
       <ul v-else class="completed-list">
-        <li v-for="plan in completed" :key="plan.id">{{ plan.dish?.name }} · {{ plan.completed_at?.slice(0,10) }}</li>
+        <li v-for="plan in completed" :key="plan.id">
+          <span>{{ plan.dish?.name }}</span>
+          <time>{{ plan.completed_at?.slice(0,10) }}</time>
+        </li>
       </ul>
     </section>
   </div>

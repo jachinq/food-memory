@@ -1,12 +1,20 @@
 <template>
-  <div class="stars" role="radiogroup" aria-label="评分">
+  <div
+    class="stars"
+    role="radiogroup"
+    :aria-label="label"
+    @mouseleave="hover = 0"
+  >
     <button
       v-for="n in 5"
       :key="n"
       type="button"
       class="icon-btn"
-      :class="{ on: n <= (modelValue || 0) }"
-      :aria-label="`${n} 分`"
+      :class="{ on: n <= filled }"
+      :aria-label="`${n} 星`"
+      :aria-checked="n === (modelValue || 0)"
+      role="radio"
+      @mouseenter="hover = n"
       @click="$emit('update:modelValue', n)"
     >
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -17,6 +25,16 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ modelValue: number | null }>()
+import { computed, ref } from 'vue'
+
+const props = withDefaults(defineProps<{
+  modelValue: number | null
+  label?: string
+}>(), {
+  label: '评分',
+})
 defineEmits<{ 'update:modelValue': [number] }>()
+
+const hover = ref(0)
+const filled = computed(() => hover.value || props.modelValue || 0)
 </script>

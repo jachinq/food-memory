@@ -32,7 +32,10 @@
     <section class="group">
       <h2>上手难度</h2>
       <div class="form-grid">
-        <label class="field"><span>难度 1-5</span><input v-model.number="form.difficulty" type="number" min="1" max="5" /></label>
+        <div class="field">
+          <span>难度</span>
+          <RatingInput v-model="form.difficulty as number | null" label="上手难度" />
+        </div>
         <label class="field"><span>耗时（分钟）</span><input v-model.number="form.cook_time_minutes" type="number" min="0" /></label>
       </div>
     </section>
@@ -42,7 +45,7 @@
     </section>
     <p v-if="error" class="muted">{{ error }}</p>
     <div class="form-actions">
-      <button class="btn btn-primary" type="submit">写入账本</button>
+      <button class="btn btn-primary" type="submit">记录</button>
     </div>
   </form>
 </template>
@@ -54,6 +57,7 @@ import { createDish, getDish, updateDish } from '../api/dishes'
 import type { Attachment, DishPayload } from '../types'
 import { STATUS_LABEL } from '../types'
 import ImageUploader from '../components/ImageUploader.vue'
+import RatingInput from '../components/RatingInput.vue'
 import TagSelector from '../components/TagSelector.vue'
 
 const route = useRoute()
