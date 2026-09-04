@@ -70,6 +70,20 @@ type RecookPlanUpdateInput struct {
 	Reason      string `json:"reason"`
 }
 
+type SourcePreviewInput struct {
+	URL string `json:"url"`
+}
+
+type SourcePreview struct {
+	URL             string `json:"url"`
+	SourcePlatform  string `json:"source_platform"`
+	Name            string `json:"name"`
+	CoverImageURL   string `json:"cover_image_url"`
+	MainIngredients string `json:"main_ingredients"`
+	CookTimeMinutes *int   `json:"cook_time_minutes"`
+	Partial         bool   `json:"partial"`
+}
+
 type HomeSummary struct {
 	Stats             HomeStats    `json:"stats"`
 	Recent            []Dish       `json:"recent"`

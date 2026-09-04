@@ -19,7 +19,12 @@
     </section>
     <section class="group">
       <h2>从哪看来的</h2>
-      <label class="field"><span>来源链接</span><input v-model="form.source_url" /></label>
+      <label class="field">
+        <span>来源链接</span>
+        <input v-model="form.source_url" placeholder="https://" @blur="onSourceBlur" />
+      </label>
+      <p v-if="previewing" class="muted">正在识别链接…</p>
+      <p v-else-if="previewHint" class="muted">{{ previewHint }}</p>
       <label class="field"><span>来源平台</span><input v-model="form.source_platform" placeholder="小红书 / 抖音 / B站" /></label>
     </section>
     <section class="group">
@@ -54,6 +59,8 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { createDish, getDish, updateDish } from '../api/dishes'
+import { previewSource } from '../api/source'
+import { ApiError } from '../api/client'
 import type { Attachment, DishPayload } from '../types'
 import { STATUS_LABEL } from '../types'
 import ImageUploader from '../components/ImageUploader.vue'
@@ -65,6 +72,9 @@ const router = useRouter()
 const id = computed(() => Number(route.params.id) || 0)
 const isEdit = computed(() => route.name === 'dish-edit')
 const error = ref('')
+const previewing = ref(false)
+const previewHint = ref('')
+const lastPreviewed = ref('')
 const coverId = ref<number | undefined>()
 const form = reactive<DishPayload>({
   name: '',
@@ -101,6 +111,55 @@ onMounted(async () => {
 function onCover(att: Attachment) {
   coverId.value = att.id
   form.cover_image_url = att.file_url
+}
+
+function looksLikeURL(raw: string) {
+  return /^https?:\/\//i.test(raw)
+}
+
+function emptyText(v?: string | null) {
+  return !v || !String(v).trim()
+}
+
+async function onSourceBlur() {
+  const url = (form.source_url || '').trim()
+  form.source_url = url
+  previewHint.value = ''
+  if (!url) return
+  if (!looksLikeURL(url)) {
+    previewHint.value = '请填写以 http(s) 开头的链接'
+    return
+  }
+  if (url === lastPreviewed.value) return
+  previewing.value = true
+  try {
+    const data = await previewSource(url)
+    lastPreviewed.value = url
+    if (emptyText(form.name) && data.name) form.name = data.name
+    if (emptyText(form.source_platform) && data.source_platform) form.source_platform = data.source_platform
+    if (emptyText(form.cover_image_url) && data.cover_image_url) form.cover_image_url = data.cover_image_url
+    if (emptyText(form.main_ingredients) && data.main_ingredients) form.main_ingredients = data.main_ingredients
+    if (form.cook_time_minutes == null && data.cook_time_minutes != null) {
+      form.cook_time_minutes = data.cook_time_minutes
+    }
+    const filled = Boolean(data.name || data.cover_image_url || data.main_ingredients || data.cook_time_minutes != null)
+    if (data.partial && !filled) {
+      previewHint.value = data.source_platform
+        ? `已识别为${data.source_platform}，未能从该链接识别更多信息，可继续手填`
+        : '未能从该链接识别更多信息，可继续手填'
+    } else {
+      previewHint.value = '已根据链接预填，请核对'
+    }
+  } catch (e) {
+    lastPreviewed.value = ''
+    if (e instanceof ApiError && e.status === 400) {
+      previewHint.value = e.message || '无效的链接'
+    } else {
+      previewHint.value = '未能从该链接识别更多信息，可继续手填'
+    }
+  } finally {
+    previewing.value = false
+  }
 }
 
 async function save() {

@@ -12,6 +12,7 @@ import (
 	"food-memory/internal/repository"
 	"food-memory/internal/service"
 	"food-memory/internal/storage"
+	"food-memory/internal/unfurl"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -42,6 +43,7 @@ func New(cfg *config.Config, db *gorm.DB, fs *storage.Local) *gin.Engine {
 	uploadH := handler.NewUploadHandler(uploadSvc)
 	homeH := handler.NewHomeHandler(homeSvc)
 	recookH := handler.NewRecookHandler(recookSvc)
+	sourceH := handler.NewSourceHandler(unfurl.New())
 
 	api := r.Group("/api")
 	api.Use(middleware.AccessToken(cfg.AccessToken))
@@ -66,6 +68,7 @@ func New(cfg *config.Config, db *gorm.DB, fs *storage.Local) *gin.Engine {
 		api.POST("/recook-plans/:id/complete", recookH.Complete)
 		api.POST("/recook-plans/:id/cancel", recookH.Cancel)
 		api.DELETE("/recook-plans/:id", recookH.Delete)
+		api.POST("/source-preview", sourceH.Preview)
 	}
 
 	r.Static("/uploads", cfg.UploadDir)
