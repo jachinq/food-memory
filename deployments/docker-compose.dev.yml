@@ -1,0 +1,31 @@
+# 仅启动开发用 PostgreSQL，供本机 go run / 局域网开发机连接。
+# 不要用 deployments/docker-compose.yml 的 db：那个服务不映射宿主机端口。
+#
+# 默认绑定 0.0.0.0，本机 Docker 与局域网 Linux 都能连。
+# 若只想本机访问：DB_BIND=127.0.0.1 docker compose -f deployments/docker-compose.dev.yml up -d
+#
+# 改端口映射后必须重建容器，否则仍会 connection refused：
+#   docker compose -f deployments/docker-compose.dev.yml up -d --force-recreate
+name: shiyi-dev
+
+services:
+  db:
+    image: postgres:16
+    container_name: shiyi-db-dev
+    restart: unless-stopped
+    ports:
+      - "${DB_BIND:-0.0.0.0}:${DB_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER:-shiyi}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-shiyi_password}
+      POSTGRES_DB: ${DB_NAME:-shiyi}
+    volumes:
+      - shiyi_pgdata_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  shiyi_pgdata_dev:

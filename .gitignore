@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+frontend/node_modules/
+frontend/dist/
+package-lock.json
+npm-debug.log*
+.pnpm-debug.log*
+
+# go
+backend/tmp/
+backend/shiyi
+backend/shiyi.exe
+backend/server
+backend/server.exe
+
+# data
+uploads/*
+!uploads/.gitkeep
+pgdata/
+*.log
+
+# env
+.env
+.env.local
+frontend/.env.local
+
+# ide
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db

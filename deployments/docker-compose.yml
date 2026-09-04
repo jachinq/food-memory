@@ -1,0 +1,37 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      APP_PORT: 8080
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: shiyi
+      DB_PASSWORD: shiyi_password
+      DB_NAME: shiyi
+      UPLOAD_DIR: /app/uploads
+      MIGRATION_DIR: /app/migrations
+      PUBLIC_DIR: /app/public
+      APP_ACCESS_TOKEN: ${APP_ACCESS_TOKEN:-}
+    volumes:
+      - ../uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: shiyi
+      POSTGRES_PASSWORD: shiyi_password
+      POSTGRES_DB: shiyi
+    volumes:
+      - ../pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shiyi -d shiyi"]
+      interval: 5s
+      timeout: 5s
+      retries: 10

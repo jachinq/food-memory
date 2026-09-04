@@ -1,0 +1,109 @@
+<template>
+  <form @submit.prevent="save">
+    <h1 class="section-title">{{ isEdit ? '编辑菜品' : '新增菜品' }}</h1>
+    <section class="group">
+      <h2>1. 基础信息</h2>
+      <div class="form-grid">
+        <div>
+          <label class="field"><span>菜名 *</span><input v-model="form.name" required /></label>
+          <label class="field">
+            <span>状态 *</span>
+            <select v-model="form.status">
+              <option v-for="(label, key) in STATUS_LABEL" :key="key" :value="key">{{ label }}</option>
+            </select>
+          </label>
+        </div>
+        <ImageUploader v-model="form.cover_image_url" biz-type="dish_cover" :biz-id="id" @uploaded="onCover" />
+      </div>
+    </section>
+    <section class="group">
+      <h2>2. 来源信息</h2>
+      <label class="field"><span>来源链接</span><input v-model="form.source_url" /></label>
+      <label class="field"><span>来源平台</span><input v-model="form.source_platform" placeholder="小红书 / 抖音 / B站" /></label>
+    </section>
+    <section class="group">
+      <h2>3. 分类信息</h2>
+      <label class="field"><span>主要食材</span><input v-model="form.main_ingredients" placeholder="鸡肉,豆腐" /></label>
+      <label class="field"><span>口味</span><input v-model="form.taste" placeholder="甜辣" /></label>
+      <label class="field"><span>场景</span><input v-model="form.scene" placeholder="下饭" /></label>
+      <div class="field"><span>标签</span><TagSelector v-model="form.tags as { name: string; type: string }[]" /></div>
+    </section>
+    <section class="group">
+      <h2>4. 制作信息</h2>
+      <div class="form-grid">
+        <label class="field"><span>难度 1-5</span><input v-model.number="form.difficulty" type="number" min="1" max="5" /></label>
+        <label class="field"><span>耗时（分钟）</span><input v-model.number="form.cook_time_minutes" type="number" min="0" /></label>
+      </div>
+    </section>
+    <section class="group">
+      <h2>5. 备注信息</h2>
+      <label class="field"><span>备注</span><textarea v-model="form.note" rows="4" /></label>
+    </section>
+    <p v-if="error" class="muted">{{ error }}</p>
+    <button class="btn btn-primary" type="submit">保存</button>
+  </form>
+</template>
+
+<script setup lang="ts">
+import { computed, onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { createDish, getDish, updateDish } from '../api/dishes'
+import type { Attachment, DishPayload } from '../types'
+import { STATUS_LABEL } from '../types'
+import ImageUploader from '../components/ImageUploader.vue'
+import TagSelector from '../components/TagSelector.vue'
+
+const route = useRoute()
+const router = useRouter()
+const id = computed(() => Number(route.params.id) || 0)
+const isEdit = computed(() => route.name === 'dish-edit')
+const error = ref('')
+const coverId = ref<number | undefined>()
+const form = reactive<DishPayload>({
+  name: '',
+  status: 'want_to_cook',
+  cover_image_url: '',
+  source_url: '',
+  source_platform: '',
+  main_ingredients: '',
+  taste: '',
+  scene: '',
+  note: '',
+  tags: [],
+})
+
+onMounted(async () => {
+  if (!isEdit.value) return
+  const dish = await getDish(id.value)
+  Object.assign(form, {
+    name: dish.name,
+    status: dish.status,
+    cover_image_url: dish.cover_image_url,
+    source_url: dish.source_url,
+    source_platform: dish.source_platform,
+    main_ingredients: dish.main_ingredients,
+    taste: dish.taste,
+    scene: dish.scene,
+    note: dish.note,
+    difficulty: dish.difficulty,
+    cook_time_minutes: dish.cook_time_minutes,
+    tags: (dish.tags || []).map((t) => ({ name: t.name, type: t.type })),
+  })
+})
+
+function onCover(att: Attachment) {
+  coverId.value = att.id
+  form.cover_image_url = att.file_url
+}
+
+async function save() {
+  error.value = ''
+  try {
+    const payload = { ...form, cover_attachment_id: coverId.value }
+    const dish = isEdit.value ? await updateDish(id.value, payload) : await createDish(payload)
+    router.push(`/dishes/${dish.id}`)
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : '保存失败'
+  }
+}
+</script>

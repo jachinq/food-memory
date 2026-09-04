@@ -1,0 +1,10 @@
+.git
+**/node_modules
+frontend/dist
+pgdata
+uploads
+*.exe
+backend/shiyi
+backend/tmp
+.cursor
+docs
