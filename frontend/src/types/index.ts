@@ -142,6 +142,34 @@ export const RESULT_LABEL: Record<string, string> = {
   failed: '失败',
 }
 
+export const HIDDEN_TAG_TYPES = new Set(['taste', 'scene'])
+
+export function displayTags(tags?: Tag[], limit?: number): Tag[] {
+  const list = (tags || []).filter((t) => !HIDDEN_TAG_TYPES.has(String(t.type)))
+  return limit != null ? list.slice(0, limit) : list
+}
+
+export function parseIngredientNames(raw?: string | null): string[] {
+  if (!raw) return []
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const part of raw.replaceAll(/[，、;；]/g, ',').split(',')) {
+    const name = part.trim()
+    if (!name || seen.has(name)) continue
+    seen.add(name)
+    out.push(name)
+  }
+  return out
+}
+
+export function toIngredientTags(raw?: string | null): { name: string; type: string }[] {
+  return parseIngredientNames(raw).map((name) => ({ name, type: 'ingredient' }))
+}
+
+export function joinIngredientTags(tags: { name: string }[]): string {
+  return tags.map((t) => t.name.trim()).filter(Boolean).join(',')
+}
+
 export function dishCover(dish: Pick<Dish, 'cover_thumbnail_url' | 'cover_image_url'>): string {
   return dish.cover_thumbnail_url || dish.cover_image_url || ''
 }

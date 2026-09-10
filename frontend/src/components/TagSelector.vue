@@ -8,7 +8,7 @@
     </div>
     <input
       :value="draft"
-      placeholder="输入标签回车添加，可从已有标签选择"
+      :placeholder="placeholder"
       @input="draft = ($event.target as HTMLInputElement).value"
       @focus="load"
       @keydown.enter.prevent="addDraft"
@@ -20,14 +20,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { fetchTags } from '../api/tags'
 import type { Tag } from '../types'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   modelValue: { name: string; type: string }[]
   type?: string
-}>()
+  excludeTypes?: string[]
+  placeholder?: string
+}>(), {
+  placeholder: '输入标签回车添加，可从已有标签选择',
+})
 const emit = defineEmits<{ 'update:modelValue': [{ name: string; type: string }[]] }>()
 
 const draft = ref('')
@@ -38,14 +42,16 @@ const filtered = computed(() => {
   return all.value.filter((t) => {
     if (props.modelValue.some((x) => x.name === t.name)) return false
     if (props.type && t.type !== props.type) return false
+    if (props.excludeTypes?.includes(String(t.type))) return false
     return !q || t.name.includes(q)
   }).slice(0, 8)
 })
 
 async function load() {
-  if (all.value.length) return
   all.value = await fetchTags(props.type)
 }
+
+onMounted(load)
 
 function add(name: string, type = props.type || 'custom') {
   name = name.trim()

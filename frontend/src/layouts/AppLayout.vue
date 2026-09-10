@@ -11,7 +11,7 @@
         <router-link to="/recook">复做清单</router-link>
       </nav>
       <div class="topbar-search">
-        <SearchBar v-model="keyword" placeholder="鸡肉、甜辣、下饭…" @submit="goSearch" />
+        <SearchBar v-model="keyword" placeholder="菜名、食材、标签…" @submit="goSearch" />
       </div>
       <router-link class="btn btn-primary" to="/dishes/new">记一道菜</router-link>
     </header>

@@ -53,13 +53,14 @@ func (r *DishRepo) List(q model.DishListQuery) ([]model.Dish, int64, error) {
 	if q.Keyword != "" {
 		like := "%" + q.Keyword + "%"
 		db = db.Where(`
-			name ILIKE ? OR main_ingredients ILIKE ? OR note ILIKE ? OR description ILIKE ? OR taste ILIKE ? OR scene ILIKE ?
+			name ILIKE ? OR main_ingredients ILIKE ?
 			OR id IN (
 				SELECT dt.dish_id FROM dish_tags dt
 				JOIN tags t ON t.id = dt.tag_id AND t.deleted_at IS NULL
 				WHERE t.name ILIKE ?
+				AND t.type NOT IN (?, ?)
 			)
-		`, like, like, like, like, like, like, like)
+		`, like, like, like, model.TagTaste, model.TagScene)
 	}
 	if q.Status != "" {
 		db = db.Where("status = ?", q.Status)

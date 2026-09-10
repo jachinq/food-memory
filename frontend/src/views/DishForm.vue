@@ -4,9 +4,10 @@
     <h1 class="section-title">{{ isEdit ? '改这道菜' : '记一道新菜' }}</h1>
     <section class="group">
       <h2>基础</h2>
+      <label class="field"><span>菜名 *</span><input v-model="form.name" required /></label>
+      <label class="field"><span>做法</span><textarea v-model="form.description" rows="6" placeholder="怎么做这道菜" /></label>
       <div class="form-grid">
         <div>
-          <label class="field"><span>菜名 *</span><input v-model="form.name" required /></label>
           <label class="field">
             <span>状态 *</span>
             <select v-model="form.status">
@@ -29,24 +30,28 @@
     </section>
     <section class="group">
       <h2>怎么想起它</h2>
-      <label class="field"><span>主要食材</span><input v-model="form.main_ingredients" placeholder="鸡肉,豆腐" /></label>
-      <label class="field"><span>口味</span><input v-model="form.taste" placeholder="甜辣" /></label>
-      <label class="field"><span>场景</span><input v-model="form.scene" placeholder="下饭" /></label>
-      <div class="field"><span>标签</span><TagSelector v-model="form.tags as { name: string; type: string }[]" /></div>
-    </section>
-    <section class="group">
-      <h2>上手难度</h2>
-      <div class="form-grid">
-        <div class="field">
-          <span>难度</span>
-          <RatingInput v-model="form.difficulty as number | null" label="上手难度" />
-        </div>
-        <label class="field"><span>耗时（分钟）</span><input v-model.number="form.cook_time_minutes" type="number" min="0" /></label>
+      <div class="field">
+        <span>主要食材</span>
+        <TagSelector
+          v-model="ingredients"
+          type="ingredient"
+          placeholder="输入食材回车添加，也可直接选以前用过的"
+        />
+      </div>
+      <div class="field">
+        <span>标签</span>
+        <TagSelector
+          v-model="form.tags as { name: string; type: string }[]"
+          :exclude-types="['ingredient', 'taste', 'scene']"
+        />
       </div>
     </section>
     <section class="group">
-      <h2>随手记</h2>
-      <label class="field"><span>备注</span><textarea v-model="form.note" rows="4" /></label>
+      <h2>上手难度</h2>
+      <div class="field">
+        <span>难度</span>
+        <RatingInput v-model="form.difficulty as number | null" label="上手难度" />
+      </div>
     </section>
     <p v-if="error" class="muted">{{ error }}</p>
     <div class="form-actions">
@@ -62,7 +67,7 @@ import { createDish, getDish, updateDish } from '../api/dishes'
 import { previewSource } from '../api/source'
 import { ApiError } from '../api/client'
 import type { Attachment, DishPayload } from '../types'
-import { STATUS_LABEL } from '../types'
+import { STATUS_LABEL, joinIngredientTags, toIngredientTags } from '../types'
 import ImageUploader from '../components/ImageUploader.vue'
 import RatingInput from '../components/RatingInput.vue'
 import TagSelector from '../components/TagSelector.vue'
@@ -76,16 +81,15 @@ const previewing = ref(false)
 const previewHint = ref('')
 const lastPreviewed = ref('')
 const coverId = ref<number | undefined>()
+const ingredients = ref<{ name: string; type: string }[]>([])
 const form = reactive<DishPayload>({
   name: '',
   status: 'want_to_cook',
   cover_image_url: '',
   source_url: '',
   source_platform: '',
+  description: '',
   main_ingredients: '',
-  taste: '',
-  scene: '',
-  note: '',
   tags: [],
 })
 
@@ -98,14 +102,14 @@ onMounted(async () => {
     cover_image_url: dish.cover_image_url,
     source_url: dish.source_url,
     source_platform: dish.source_platform,
+    description: dish.description,
     main_ingredients: dish.main_ingredients,
-    taste: dish.taste,
-    scene: dish.scene,
-    note: dish.note,
     difficulty: dish.difficulty,
-    cook_time_minutes: dish.cook_time_minutes,
-    tags: (dish.tags || []).map((t) => ({ name: t.name, type: t.type })),
+    tags: (dish.tags || [])
+      .filter((t) => t.type !== 'ingredient' && t.type !== 'taste' && t.type !== 'scene')
+      .map((t) => ({ name: t.name, type: t.type })),
   })
+  ingredients.value = toIngredientTags(dish.main_ingredients)
 })
 
 function onCover(att: Attachment) {
@@ -138,11 +142,10 @@ async function onSourceBlur() {
     if (emptyText(form.name) && data.name) form.name = data.name
     if (emptyText(form.source_platform) && data.source_platform) form.source_platform = data.source_platform
     if (emptyText(form.cover_image_url) && data.cover_image_url) form.cover_image_url = data.cover_image_url
-    if (emptyText(form.main_ingredients) && data.main_ingredients) form.main_ingredients = data.main_ingredients
-    if (form.cook_time_minutes == null && data.cook_time_minutes != null) {
-      form.cook_time_minutes = data.cook_time_minutes
+    if (!ingredients.value.length && data.main_ingredients) {
+      ingredients.value = toIngredientTags(data.main_ingredients)
     }
-    const filled = Boolean(data.name || data.cover_image_url || data.main_ingredients || data.cook_time_minutes != null)
+    const filled = Boolean(data.name || data.cover_image_url || data.main_ingredients)
     if (data.partial && !filled) {
       previewHint.value = data.source_platform
         ? `已识别为${data.source_platform}，未能从该链接识别更多信息，可继续手填`
@@ -165,7 +168,12 @@ async function onSourceBlur() {
 async function save() {
   error.value = ''
   try {
-    const payload = { ...form, cover_attachment_id: coverId.value }
+    const payload = {
+      ...form,
+      main_ingredients: joinIngredientTags(ingredients.value),
+      tags: (form.tags || []).filter((t) => t.type !== 'ingredient' && t.type !== 'taste' && t.type !== 'scene'),
+      cover_attachment_id: coverId.value,
+    }
     const dish = isEdit.value ? await updateDish(id.value, payload) : await createDish(payload)
     router.push(`/dishes/${dish.id}`)
   } catch (e) {

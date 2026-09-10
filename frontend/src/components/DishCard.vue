@@ -12,7 +12,7 @@
       </div>
       <h3>{{ dish.name }}</h3>
       <div class="row">
-        <span v-for="tag in (dish.tags || []).slice(0, 3)" :key="tag.id" class="tag">{{ tag.name }}</span>
+        <span v-for="tag in displayTags(dish.tags, 3)" :key="tag.id" class="tag">{{ tag.name }}</span>
       </div>
       <p v-if="dish.last_cooked_at" class="muted" style="margin:8px 0 0;font-size:12px">最近 {{ formatDate(dish.last_cooked_at) }}</p>
     </div>
@@ -22,7 +22,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Dish } from '../types'
-import { dishCover, formatDate } from '../types'
+import { dishCover, displayTags, formatDate } from '../types'
 import StatusBadge from './StatusBadge.vue'
 
 const props = defineProps<{ dish: Dish; index?: number }>()

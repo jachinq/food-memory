@@ -2,7 +2,7 @@
   <div>
     <p class="section-kicker">Archive</p>
     <h1 class="section-title">菜品库</h1>
-    <SearchBar v-model="keyword" placeholder="我记得是鸡肉、甜辣、下饭…" @submit="reload" />
+    <SearchBar v-model="keyword" placeholder="我记得是菜名、鸡肉、标签…" @submit="reload" />
     <div class="toolbar">
       <button class="btn btn-ghost mobile-only" type="button" @click="drawer = true">筛选</button>
       <button class="btn btn-ghost" type="button" @click="reload">按记忆搜</button>
@@ -10,7 +10,7 @@
     <div class="list-layout">
       <FilterSidebar v-model:status="status" v-model:tag="tag" v-model:cooked="cooked" v-model:success="success" />
       <div>
-        <DishGrid :items="items" empty-title="没找到相关菜品" empty-text="试试搜索食材、口味或标签。" />
+        <DishGrid :items="items" empty-title="没找到相关菜品" empty-text="试试搜索菜名、食材或标签。" />
         <div v-if="total > items.length" class="toolbar">
           <button class="btn btn-ghost" type="button" @click="more">再翻一页</button>
         </div>

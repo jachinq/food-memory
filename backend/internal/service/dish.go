@@ -41,7 +41,7 @@ func (s *DishService) Create(in model.DishCreateInput) (*model.Dish, error) {
 		CoverImageURL:   strings.TrimSpace(in.CoverImageURL),
 		SourceURL:       strings.TrimSpace(in.SourceURL),
 		SourcePlatform:  strings.TrimSpace(in.SourcePlatform),
-		Description:     in.Description,
+		Description:     strings.TrimSpace(in.Description),
 		Status:          status,
 		Rating:          in.Rating,
 		Difficulty:      in.Difficulty,
@@ -94,7 +94,7 @@ func (s *DishService) Update(id uint64, in model.DishCreateInput) (*model.Dish, 
 	dish.CoverImageURL = strings.TrimSpace(in.CoverImageURL)
 	dish.SourceURL = strings.TrimSpace(in.SourceURL)
 	dish.SourcePlatform = strings.TrimSpace(in.SourcePlatform)
-	dish.Description = in.Description
+	dish.Description = strings.TrimSpace(in.Description)
 	dish.Status = status
 	dish.Rating = in.Rating
 	dish.Difficulty = in.Difficulty
@@ -195,18 +195,15 @@ func (s *DishService) syncTags(tx *gorm.DB, dishID uint64, dish *model.Dish, ext
 		return nil
 	}
 
-	if err := add(dish.Taste, model.TagTaste); err != nil {
-		return err
-	}
-	if err := add(dish.Scene, model.TagScene); err != nil {
-		return err
-	}
 	for _, n := range splitNames(dish.MainIngredients) {
 		if err := add(n, model.TagIngredient); err != nil {
 			return err
 		}
 	}
 	for _, t := range extra {
+		if t.Type == model.TagTaste || t.Type == model.TagScene {
+			continue
+		}
 		if err := add(t.Name, t.Type); err != nil {
 			return err
 		}
