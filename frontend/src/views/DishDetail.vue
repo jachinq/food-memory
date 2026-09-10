@@ -30,7 +30,13 @@
     <p class="section-kicker">Log</p>
     <h2 class="section-title">制作记录</h2>
     <EmptyState v-if="!dish.records?.length" title="这道菜还没有制作记录" text="做完后记得回来补一条。" />
-    <CookRecordTimeline v-else :items="dish.records" @preview="preview = $event" />
+    <CookRecordTimeline
+      v-else
+      :items="dish.records"
+      :dish-id="dish.id"
+      @preview="preview = $event"
+      @remove="removeRecord"
+    />
     <p v-if="dish.source_url" class="source-footer">
       <a :href="dish.source_url" target="_blank" rel="noreferrer">来源 {{ dish.source_platform || '链接' }}</a>
     </p>
@@ -44,6 +50,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { deleteDish, getDish } from '../api/dishes'
+import { deleteRecord } from '../api/records'
 import { createRecookPlan } from '../api/recook'
 import { ApiError } from '../api/client'
 import type { Dish } from '../types'
@@ -73,6 +80,17 @@ async function markRecook() {
       return
     }
     alert(e instanceof Error ? e.message : '加入失败')
+  }
+}
+
+async function removeRecord(id: number) {
+  if (!dish.value) return
+  if (!confirm('删除这条制作记录？次数和评分会按剩下的记录重算。整道菜不会被删。')) return
+  try {
+    await deleteRecord(id)
+    dish.value = await getDish(dish.value.id)
+  } catch (e) {
+    alert(e instanceof Error ? e.message : '删除失败')
   }
 }
 

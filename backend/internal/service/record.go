@@ -115,7 +115,7 @@ func (s *RecordService) Update(id uint64, in model.RecordInput) (*model.RecordSa
 		if err := s.bindPhotos(tx, rec.ID, in); err != nil {
 			return err
 		}
-		return s.recalcDish(tx, rec.DishID, in.UpdateDishStatus)
+		return s.recalcDishAfterEdit(tx, rec.DishID)
 	})
 	if err != nil {
 		return nil, err
@@ -134,7 +134,7 @@ func (s *RecordService) Delete(id uint64) error {
 		if err := tx.Delete(&model.CookRecord{}, id).Error; err != nil {
 			return err
 		}
-		return s.recalcDish(tx, rec.DishID, "")
+		return s.recalcDishAfterEdit(tx, rec.DishID)
 	})
 }
 
@@ -169,6 +169,9 @@ func (s *RecordService) buildRecord(dishID uint64, in model.RecordInput) (*model
 
 func (s *RecordService) bindPhotos(tx *gorm.DB, recordID uint64, in model.RecordInput) error {
 	repo := repository.NewAttachmentRepo(tx)
+	if err := repo.UnbindByBiz(model.BizCookRecord, recordID); err != nil {
+		return err
+	}
 	if err := repo.Bind(in.AttachmentIDs, model.BizCookRecord, recordID); err != nil {
 		return err
 	}
@@ -186,6 +189,8 @@ func (s *RecordService) recalcDish(tx *gorm.DB, dishID uint64, status string) er
 	}
 	if avg != nil {
 		updates["rating"] = round1(*avg)
+	} else {
+		updates["rating"] = nil
 	}
 	if status != "" {
 		if !model.ValidDishStatus(status) {
@@ -194,6 +199,26 @@ func (s *RecordService) recalcDish(tx *gorm.DB, dishID uint64, status string) er
 		updates["status"] = status
 	}
 	return tx.Model(&model.Dish{}).Where("id = ?", dishID).Updates(updates).Error
+}
+
+func (s *RecordService) recalcDishAfterEdit(tx *gorm.DB, dishID uint64) error {
+	if err := s.recalcDish(tx, dishID, ""); err != nil {
+		return err
+	}
+	var n int64
+	if err := tx.Model(&model.RecookPlan{}).
+		Where("dish_id = ? AND status = ?", dishID, model.RecookActive).
+		Count(&n).Error; err != nil {
+		return err
+	}
+	if n > 0 {
+		return nil
+	}
+	status, err := dishStatusFromLatestCook(tx, dishID)
+	if err != nil {
+		return err
+	}
+	return tx.Model(&model.Dish{}).Where("id = ?", dishID).Update("status", status).Error
 }
 
 func suggestStatus(in model.RecordInput) string {

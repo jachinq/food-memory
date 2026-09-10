@@ -19,6 +19,10 @@
         </div>
         <p v-if="item.notes" class="muted">{{ item.notes }}</p>
         <p v-if="item.next_improvement"><b>下次注意：</b>{{ item.next_improvement }}</p>
+        <div class="timeline-actions">
+          <router-link class="btn btn-ghost btn-compact" :to="`/dishes/${dishId}/records/${item.id}/edit`">改这条</router-link>
+          <button class="btn btn-danger btn-compact" type="button" @click="$emit('remove', item.id)">删这条</button>
+        </div>
       </div>
     </article>
   </div>
@@ -27,6 +31,6 @@
 <script setup lang="ts">
 import type { CookRecord } from '../types'
 import { RESULT_LABEL, formatDate } from '../types'
-defineProps<{ items: CookRecord[] }>()
-defineEmits<{ preview: [string] }>()
+defineProps<{ items: CookRecord[]; dishId: number }>()
+defineEmits<{ preview: [string]; remove: [number] }>()
 </script>

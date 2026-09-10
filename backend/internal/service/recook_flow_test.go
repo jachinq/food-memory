@@ -226,6 +226,28 @@ func TestUpdateRecordDoesNotCompletePlan(t *testing.T) {
 	}
 }
 
+func TestDeleteLastRecordSetsWantToCook(t *testing.T) {
+	h := setupRecook(t)
+	dish := seedDish(t, h, model.StatusSuccess)
+	saved, err := h.records.Create(dish.ID, model.RecordInput{Result: model.ResultSuccess})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := h.records.Delete(saved.Record.ID); err != nil {
+		t.Fatal(err)
+	}
+	got, err := h.dishes.GetByID(dish.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Status != model.StatusWantToCook {
+		t.Fatalf("status=%s want want_to_cook", got.Status)
+	}
+	if got.CookCount != 0 {
+		t.Fatalf("cook_count=%d want 0", got.CookCount)
+	}
+}
+
 func TestDeleteRecordDoesNotReopenCompletedPlan(t *testing.T) {
 	h := setupRecook(t)
 	dish := seedDish(t, h, model.StatusSuccess)
@@ -246,5 +268,100 @@ func TestDeleteRecordDoesNotReopenCompletedPlan(t *testing.T) {
 	}
 	if got.Status != model.RecookCompleted {
 		t.Fatalf("status=%s want completed", got.Status)
+	}
+}
+
+func TestDeleteKeepsWantToRecookWhenPlanActive(t *testing.T) {
+	h := setupRecook(t)
+	dish := seedDish(t, h, model.StatusSuccess)
+	saved, err := h.records.Create(dish.ID, model.RecordInput{Result: model.ResultSuccess})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := h.recook.Create(model.RecookPlanInput{DishID: dish.ID}); err != nil {
+		t.Fatal(err)
+	}
+	if err := h.records.Delete(saved.Record.ID); err != nil {
+		t.Fatal(err)
+	}
+	got, err := h.dishes.GetByID(dish.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Status != model.StatusWantToRecook {
+		t.Fatalf("status=%s want want_to_recook", got.Status)
+	}
+}
+
+func TestDeleteLatestLeavesStatusFromRemaining(t *testing.T) {
+	h := setupRecook(t)
+	dish := seedDish(t, h, model.StatusSuccess)
+	if _, err := h.records.Create(dish.ID, model.RecordInput{
+		Result:   model.ResultFailed,
+		CookedAt: "2024-01-01",
+	}); err != nil {
+		t.Fatal(err)
+	}
+	newer, err := h.records.Create(dish.ID, model.RecordInput{
+		Result:   model.ResultSuccess,
+		CookedAt: "2024-06-01",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := h.records.Delete(newer.Record.ID); err != nil {
+		t.Fatal(err)
+	}
+	got, err := h.dishes.GetByID(dish.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Status != model.StatusFailed {
+		t.Fatalf("status=%s want failed", got.Status)
+	}
+}
+
+func TestUpdateRecordRecalcsDishStatus(t *testing.T) {
+	h := setupRecook(t)
+	dish := seedDish(t, h, model.StatusSuccess)
+	saved, err := h.records.Create(dish.ID, model.RecordInput{Result: model.ResultSuccess})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := h.records.Update(saved.Record.ID, model.RecordInput{Result: model.ResultFailed}); err != nil {
+		t.Fatal(err)
+	}
+	got, err := h.dishes.GetByID(dish.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Status != model.StatusFailed {
+		t.Fatalf("status=%s want failed", got.Status)
+	}
+}
+
+func TestUpdateRecordDoesNotStartWantToRecook(t *testing.T) {
+	h := setupRecook(t)
+	dish := seedDish(t, h, model.StatusSuccess)
+	saved, err := h.records.Create(dish.ID, model.RecordInput{Result: model.ResultSuccess})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := h.records.Update(saved.Record.ID, model.RecordInput{
+		Result:           model.ResultSuccess,
+		UpdateDishStatus: model.StatusWantToRecook,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	_, err = h.plans.ActiveByDish(dish.ID)
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		t.Fatalf("err=%v want ErrRecordNotFound", err)
+	}
+	got, err := h.dishes.GetByID(dish.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Status != model.StatusSuccess {
+		t.Fatalf("status=%s want success", got.Status)
 	}
 }

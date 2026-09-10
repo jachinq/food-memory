@@ -27,6 +27,12 @@ func (r *AttachmentRepo) Bind(ids []uint64, bizType string, bizID uint64) error 
 		Updates(map[string]any{"biz_type": bizType, "biz_id": bizID}).Error
 }
 
+func (r *AttachmentRepo) UnbindByBiz(bizType string, bizID uint64) error {
+	return r.db.Model(&model.Attachment{}).
+		Where("biz_type = ? AND biz_id = ?", bizType, bizID).
+		Updates(map[string]any{"biz_type": "", "biz_id": 0}).Error
+}
+
 func (r *AttachmentRepo) BindByURLs(urls []string, bizType string, bizID uint64) error {
 	if len(urls) == 0 {
 		return nil

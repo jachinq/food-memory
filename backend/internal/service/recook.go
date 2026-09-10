@@ -112,7 +112,7 @@ func (s *RecookService) Cancel(id uint64) error {
 			Update("status", model.RecookCancelled).Error; err != nil {
 			return err
 		}
-		status, err := statusAfterCancel(tx, plan.DishID)
+		status, err := dishStatusFromLatestCook(tx, plan.DishID)
 		if err != nil {
 			return err
 		}
@@ -121,7 +121,7 @@ func (s *RecookService) Cancel(id uint64) error {
 	})
 }
 
-func statusAfterCancel(tx *gorm.DB, dishID uint64) (string, error) {
+func dishStatusFromLatestCook(tx *gorm.DB, dishID uint64) (string, error) {
 	var rec model.CookRecord
 	err := tx.Where("dish_id = ?", dishID).Order("cooked_at DESC, id DESC").First(&rec).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {

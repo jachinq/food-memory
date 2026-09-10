@@ -15,6 +15,7 @@ const router = createRouter({
         { path: 'dishes/:id', name: 'dish-detail', component: () => import('../views/DishDetail.vue') },
         { path: 'dishes/:id/edit', name: 'dish-edit', component: () => import('../views/DishForm.vue') },
         { path: 'dishes/:id/records/new', name: 'record-new', component: () => import('../views/CookRecordForm.vue') },
+        { path: 'dishes/:id/records/:recordId/edit', name: 'record-edit', component: () => import('../views/CookRecordForm.vue') },
         { path: 'recook', name: 'recook', component: () => import('../views/RecookPlan.vue') },
       ],
     },
