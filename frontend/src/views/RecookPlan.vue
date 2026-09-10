@@ -21,8 +21,7 @@
           <p class="muted">计划日期 {{ plan.planned_date?.slice(0, 10) || '未定' }}</p>
           <div class="row">
             <input type="date" :value="plan.planned_date?.slice(0,10)" @change="onDate(plan.id, ($event.target as HTMLInputElement).value)" />
-            <router-link class="btn btn-primary" :to="`/dishes/${plan.dish_id}/records/new`">去记录</router-link>
-            <button class="btn btn-ghost" type="button" @click="done(plan.id)">完成</button>
+            <router-link class="btn btn-primary" :to="`/dishes/${plan.dish_id}/records/new?from=recook`">去记录</router-link>
             <button class="btn btn-ghost" type="button" @click="cancel(plan.id)">取消</button>
           </div>
         </article>
@@ -51,7 +50,7 @@
         </div>
         <p class="board-meta">{{ completed.length }} 道</p>
       </header>
-      <EmptyState v-if="!completed.length" title="还没有完成的计划" text="做完后点完成，并顺手记一次制作。" />
+      <EmptyState v-if="!completed.length" title="还没有完成的计划" text="保存一次制作记录后，计划会移到这里。" />
       <ul v-else class="completed-list">
         <li v-for="plan in completed" :key="plan.id">
           <span>{{ plan.dish?.name }}</span>
@@ -64,7 +63,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { cancelRecookPlan, completeRecookPlan, fetchRecookPlans, updateRecookPlan } from '../api/recook'
+import { cancelRecookPlan, fetchRecookPlans, updateRecookPlan } from '../api/recook'
 import { fetchHomeSummary } from '../api/home'
 import type { Dish, RecookPlan } from '../types'
 import DishGrid from '../components/DishGrid.vue'
@@ -82,7 +81,6 @@ async function load() {
 }
 
 onMounted(load)
-async function done(id: number) { await completeRecookPlan(id); await load() }
 async function cancel(id: number) { await cancelRecookPlan(id); await load() }
 async function onDate(id: number, date: string) { await updateRecookPlan(id, { planned_date: date }); await load() }
 </script>

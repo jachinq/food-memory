@@ -31,7 +31,7 @@ func New(cfg *config.Config, db *gorm.DB, fs *storage.Local) *gin.Engine {
 	homeRepo := repository.NewHomeRepo(db)
 
 	dishSvc := service.NewDishService(db, dishRepo, tagRepo, attRepo, recordRepo)
-	recordSvc := service.NewRecordService(db, recordRepo, dishRepo, attRepo)
+	recordSvc := service.NewRecordService(db, recordRepo, dishRepo, attRepo, recookRepo)
 	tagSvc := service.NewTagService(tagRepo)
 	uploadSvc := service.NewUploadService(cfg, fs, attRepo)
 	homeSvc := service.NewHomeService(homeRepo, attRepo)

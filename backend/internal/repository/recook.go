@@ -62,3 +62,16 @@ func (r *RecookRepo) Complete(id uint64) error {
 		"completed_at": now,
 	}).Error
 }
+
+func (r *RecookRepo) CompleteActiveByDish(tx *gorm.DB, dishID uint64) error {
+	if tx == nil {
+		tx = r.db
+	}
+	now := time.Now()
+	return tx.Model(&model.RecookPlan{}).
+		Where("dish_id = ? AND status = ?", dishID, model.RecookActive).
+		Updates(map[string]any{
+			"status":       model.RecookCompleted,
+			"completed_at": now,
+		}).Error
+}

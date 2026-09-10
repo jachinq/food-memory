@@ -17,10 +17,11 @@ type RecordService struct {
 	recs   *repository.RecordRepo
 	dishes *repository.DishRepo
 	atts   *repository.AttachmentRepo
+	plans  *repository.RecookRepo
 }
 
-func NewRecordService(db *gorm.DB, recs *repository.RecordRepo, dishes *repository.DishRepo, atts *repository.AttachmentRepo) *RecordService {
-	return &RecordService{db: db, recs: recs, dishes: dishes, atts: atts}
+func NewRecordService(db *gorm.DB, recs *repository.RecordRepo, dishes *repository.DishRepo, atts *repository.AttachmentRepo, plans *repository.RecookRepo) *RecordService {
+	return &RecordService{db: db, recs: recs, dishes: dishes, atts: atts, plans: plans}
 }
 
 func (s *RecordService) List(dishID uint64) ([]model.CookRecord, error) {
@@ -66,6 +67,15 @@ func (s *RecordService) Create(dishID uint64, in model.RecordInput) (*model.Reco
 		}
 		if err := s.recalcDish(tx, dishID, in.UpdateDishStatus); err != nil {
 			return err
+		}
+		if err := s.plans.CompleteActiveByDish(tx, dishID); err != nil {
+			return err
+		}
+		if in.UpdateDishStatus == model.StatusWantToRecook {
+			plan := &model.RecookPlan{DishID: dishID, Status: model.RecookActive}
+			if err := tx.Create(plan).Error; err != nil {
+				return err
+			}
 		}
 		return nil
 	})

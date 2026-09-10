@@ -20,18 +20,20 @@
           <span v-if="dish.rating" class="rating">{{ dish.rating }} 分</span>
         </div>
         <h1 class="section-title">{{ dish.name }}</h1>
+        <p v-if="dish.description" class="dish-method">{{ dish.description }}</p>
         <p class="muted">做过 {{ dish.cook_count }} 次 · 最近 {{ formatDate(dish.last_cooked_at) || '还没有' }}</p>
         <div class="row" style="margin-top:8px">
-          <span v-for="tag in dish.tags" :key="tag.id" class="tag">{{ tag.name }}</span>
+          <span v-for="tag in displayTags(dish.tags)" :key="tag.id" class="tag">{{ tag.name }}</span>
         </div>
-        <p v-if="dish.source_url"><a :href="dish.source_url" target="_blank" rel="noreferrer">来源 {{ dish.source_platform || '链接' }}</a></p>
-        <p v-if="dish.note">{{ dish.note }}</p>
       </div>
     </section>
     <p class="section-kicker">Log</p>
     <h2 class="section-title">制作记录</h2>
     <EmptyState v-if="!dish.records?.length" title="这道菜还没有制作记录" text="做完后记得回来补一条。" />
     <CookRecordTimeline v-else :items="dish.records" @preview="preview = $event" />
+    <p v-if="dish.source_url" class="source-footer">
+      <a :href="dish.source_url" target="_blank" rel="noreferrer">来源 {{ dish.source_platform || '链接' }}</a>
+    </p>
     <div v-if="preview" class="lightbox" @click="preview = ''">
       <img :src="preview" alt="" />
     </div>
@@ -43,8 +45,9 @@ import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { deleteDish, getDish } from '../api/dishes'
 import { createRecookPlan } from '../api/recook'
+import { ApiError } from '../api/client'
 import type { Dish } from '../types'
-import { formatDate } from '../types'
+import { displayTags, formatDate } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 import CookRecordTimeline from '../components/CookRecordTimeline.vue'
 import EmptyState from '../components/EmptyState.vue'
@@ -60,9 +63,17 @@ onMounted(async () => {
 
 async function markRecook() {
   if (!dish.value) return
-  await createRecookPlan({ dish_id: dish.value.id })
-  alert('已加入复做清单')
-  dish.value = await getDish(dish.value.id)
+  try {
+    await createRecookPlan({ dish_id: dish.value.id })
+    alert('已加入复做清单')
+    dish.value = await getDish(dish.value.id)
+  } catch (e) {
+    if (e instanceof ApiError && e.message === '已在清单') {
+      alert('已在清单')
+      return
+    }
+    alert(e instanceof Error ? e.message : '加入失败')
+  }
 }
 
 async function remove() {

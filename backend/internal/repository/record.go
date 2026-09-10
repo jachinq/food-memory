@@ -54,9 +54,11 @@ func (r *RecordRepo) Stats(tx *gorm.DB, dishID uint64) (count int64, last *time.
 	if count == 0 {
 		return
 	}
-	if err = tx.Model(&model.CookRecord{}).Where("dish_id = ?", dishID).Select("MAX(cooked_at)").Scan(&last).Error; err != nil {
+	var latest model.CookRecord
+	if err = tx.Where("dish_id = ?", dishID).Order("cooked_at DESC, id DESC").First(&latest).Error; err != nil {
 		return
 	}
+	last = &latest.CookedAt
 	var avgVal *float64
 	if err = tx.Model(&model.CookRecord{}).
 		Where("dish_id = ? AND rating IS NOT NULL", dishID).

@@ -84,7 +84,11 @@ async function save() {
       photo_urls: photos.value,
       attachment_ids: ids.value,
     })
-    router.push(`/dishes/${dish.value.id}`)
+    if (route.query.from === 'recook') {
+      router.push('/recook')
+    } else {
+      router.push(`/dishes/${dish.value.id}`)
+    }
   } catch (e) {
     error.value = e instanceof Error ? e.message : '保存失败'
   }

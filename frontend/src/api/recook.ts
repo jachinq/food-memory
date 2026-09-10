@@ -12,6 +12,5 @@ export const createRecookPlan = (payload: { dish_id: number; planned_date?: stri
 export const updateRecookPlan = (id: number, payload: { planned_date?: string; status?: string; reason?: string }) =>
   api.put<RecookPlan>(`/api/recook-plans/${id}`, payload)
 
-export const completeRecookPlan = (id: number) => api.post<RecookPlan>(`/api/recook-plans/${id}/complete`)
 export const cancelRecookPlan = (id: number) => api.post(`/api/recook-plans/${id}/cancel`)
 export const deleteRecookPlan = (id: number) => api.del(`/api/recook-plans/${id}`)

@@ -39,6 +39,10 @@ func (h *RecookHandler) Create(c *gin.Context) {
 			NotFound(c, "菜品不存在")
 			return
 		}
+		if errors.Is(err, service.ErrRecookAlreadyActive) {
+			BadRequest(c, err.Error())
+			return
+		}
 		BadRequest(c, err.Error())
 		return
 	}
@@ -76,6 +80,10 @@ func (h *RecookHandler) Complete(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			NotFound(c, "复做计划不存在")
+			return
+		}
+		if errors.Is(err, service.ErrEmptyRecookComplete) {
+			BadRequest(c, err.Error())
 			return
 		}
 		ServerError(c, err.Error())

@@ -12,6 +12,11 @@ import (
 	"gorm.io/gorm"
 )
 
+var (
+	ErrRecookAlreadyActive = errors.New("已在清单")
+	ErrEmptyRecookComplete = errors.New("没有制作记录就不能完成计划")
+)
+
 type RecookService struct {
 	db     *gorm.DB
 	plans  *repository.RecookRepo
@@ -31,6 +36,11 @@ func (s *RecookService) Create(in model.RecookPlanInput) (*model.RecookPlan, err
 		return nil, fmt.Errorf("请选择菜品")
 	}
 	if _, err := s.dishes.GetByID(in.DishID); err != nil {
+		return nil, err
+	}
+	if existing, err := s.plans.ActiveByDish(in.DishID); err == nil && existing != nil {
+		return nil, ErrRecookAlreadyActive
+	} else if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
 	plan := &model.RecookPlan{
@@ -74,7 +84,7 @@ func (s *RecookService) Update(id uint64, in model.RecookPlanUpdateInput) (*mode
 		plan.Reason = in.Reason
 	}
 	if in.Status != "" {
-		plan.Status = in.Status
+		return nil, fmt.Errorf("不能直接改计划状态")
 	}
 	if err := s.plans.Update(plan); err != nil {
 		return nil, err
@@ -86,10 +96,7 @@ func (s *RecookService) Complete(id uint64) (*model.RecookPlan, error) {
 	if _, err := s.plans.GetByID(id); err != nil {
 		return nil, err
 	}
-	if err := s.plans.Complete(id); err != nil {
-		return nil, err
-	}
-	return s.plans.GetByID(id)
+	return nil, ErrEmptyRecookComplete
 }
 
 func (s *RecookService) Cancel(id uint64) error {
@@ -97,8 +104,40 @@ func (s *RecookService) Cancel(id uint64) error {
 	if err != nil {
 		return err
 	}
-	plan.Status = model.RecookCancelled
-	return s.plans.Update(plan)
+	if plan.Status != model.RecookActive {
+		return fmt.Errorf("只能取消进行中的计划")
+	}
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&model.RecookPlan{}).Where("id = ?", id).
+			Update("status", model.RecookCancelled).Error; err != nil {
+			return err
+		}
+		status, err := statusAfterCancel(tx, plan.DishID)
+		if err != nil {
+			return err
+		}
+		return tx.Model(&model.Dish{}).Where("id = ?", plan.DishID).
+			Update("status", status).Error
+	})
+}
+
+func statusAfterCancel(tx *gorm.DB, dishID uint64) (string, error) {
+	var rec model.CookRecord
+	err := tx.Where("dish_id = ?", dishID).Order("cooked_at DESC, id DESC").First(&rec).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return model.StatusWantToCook, nil
+	}
+	if err != nil {
+		return "", err
+	}
+	switch rec.Result {
+	case model.ResultSuccess:
+		return model.StatusSuccess, nil
+	case model.ResultFailed:
+		return model.StatusFailed, nil
+	default:
+		return model.StatusCooked, nil
+	}
 }
 
 func (s *RecookService) Delete(id uint64) error {
