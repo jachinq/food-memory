@@ -8,6 +8,7 @@
         <p v-if="error" class="muted">{{ error }}</p>
         <button class="btn btn-primary" type="submit">看菜牌</button>
       </form>
+      <InstallActions />
     </div>
   </main>
 </template>
@@ -17,6 +18,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { setToken } from '../api/client'
 import { fetchHomeSummary } from '../api/home'
+import InstallActions from '../components/InstallActions.vue'
 
 const router = useRouter()
 const token = ref('')

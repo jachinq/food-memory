@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -81,17 +82,54 @@ func mountSPA(r *gin.Engine, publicDir string) {
 	if _, err := os.Stat(index); err != nil {
 		return
 	}
+	absPublic, err := filepath.Abs(publicDir)
+	if err != nil {
+		return
+	}
 	r.Static("/assets", filepath.Join(publicDir, "assets"))
-	r.StaticFile("/favicon.svg", filepath.Join(publicDir, "favicon.svg"))
 	r.NoRoute(func(c *gin.Context) {
-		if strings.HasPrefix(c.Request.URL.Path, "/api") {
+		path := c.Request.URL.Path
+		if strings.HasPrefix(path, "/api") {
 			c.JSON(http.StatusNotFound, handler.Body{Code: 404, Message: "接口不存在", Data: nil})
 			return
 		}
-		if strings.HasPrefix(c.Request.URL.Path, "/uploads") {
+		if strings.HasPrefix(path, "/uploads") {
 			c.Status(http.StatusNotFound)
+			return
+		}
+		if full, ok := existingPublicFile(absPublic, path); ok {
+			if noCacheShell(path) {
+				c.Header("Cache-Control", "no-cache")
+			}
+			c.File(full)
 			return
 		}
 		c.File(index)
 	})
+}
+
+func existingPublicFile(absPublic, urlPath string) (string, bool) {
+	rel := strings.TrimPrefix(path.Clean("/"+urlPath), "/")
+	if rel == "" || rel == "." {
+		return "", false
+	}
+	full := filepath.Join(absPublic, filepath.FromSlash(rel))
+	absFull, err := filepath.Abs(full)
+	if err != nil {
+		return "", false
+	}
+	sep := string(os.PathSeparator)
+	if absFull != absPublic && !strings.HasPrefix(absFull, absPublic+sep) {
+		return "", false
+	}
+	info, err := os.Stat(absFull)
+	if err != nil || info.IsDir() {
+		return "", false
+	}
+	return absFull, true
+}
+
+func noCacheShell(urlPath string) bool {
+	base := filepath.Base(urlPath)
+	return base == "sw.js" || base == "registerSW.js" || strings.HasPrefix(base, "workbox-")
 }

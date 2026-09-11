@@ -17,6 +17,7 @@ const router = createRouter({
         { path: 'dishes/:id/records/new', name: 'record-new', component: () => import('../views/CookRecordForm.vue') },
         { path: 'dishes/:id/records/:recordId/edit', name: 'record-edit', component: () => import('../views/CookRecordForm.vue') },
         { path: 'recook', name: 'recook', component: () => import('../views/RecookPlan.vue') },
+        { path: 'me', name: 'me', component: () => import('../views/Me.vue') },
       ],
     },
   ],

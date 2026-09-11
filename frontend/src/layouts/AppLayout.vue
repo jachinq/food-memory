@@ -6,13 +6,21 @@
         <small>HOUSE MENU</small>
       </router-link>
       <nav class="nav-links">
-        <router-link to="/" active-class="is-prefix-active" exact-active-class="router-link-active">首页</router-link>
+        <router-link to="/" exact-active-class="router-link-active">首页</router-link>
         <router-link to="/dishes">菜牌</router-link>
         <router-link to="/recook">待做</router-link>
       </nav>
       <div class="topbar-search">
         <SearchBar v-model="keyword" placeholder="菜名、食材、标签…" @submit="goSearch" />
       </div>
+      <button
+        v-if="install.surface === 'install'"
+        class="btn btn-install"
+        type="button"
+        @click="install.install()"
+      >
+        安装
+      </button>
       <router-link class="btn btn-primary" to="/dishes/new">记一道菜</router-link>
     </header>
 
@@ -27,7 +35,7 @@
     </div>
 
     <nav class="bottom-nav">
-      <router-link to="/" active-class="is-prefix-active" exact-active-class="router-link-active">
+      <router-link to="/" exact-active-class="router-link-active">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 10.5 12 4l8 6.5V20H4z"/><path d="M9 20v-6h6v6"/></svg>
         首页
       </router-link>
@@ -40,10 +48,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 7h13v13H7z"/><path d="M4 4h13v3"/><path d="M10 12h6M10 16h4"/></svg>
         待做
       </router-link>
-      <a href="#me" @click.prevent="sheet = true">
+      <router-link to="/me">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3"/><path d="M5 19c1.4-3 3.8-4.5 7-4.5S17.6 16 19 19"/></svg>
         我的
-      </a>
+      </router-link>
     </nav>
 
     <Transition name="sheet">
@@ -64,10 +72,12 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import SearchBar from '../components/SearchBar.vue'
 import FeedbackLayer from '../components/FeedbackLayer.vue'
+import { useInstall } from '../stores/install'
 
 const router = useRouter()
 const keyword = ref('')
 const sheet = ref(false)
+const install = useInstall()
 
 function goSearch() {
   router.push({ path: '/dishes', query: { keyword: keyword.value } })
