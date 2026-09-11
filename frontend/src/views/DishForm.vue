@@ -33,6 +33,7 @@
       <div class="field">
         <span>主要食材</span>
         <TagSelector
+          ref="ingredientPicker"
           v-model="ingredients"
           type="ingredient"
           placeholder="输入食材回车添加，也可直接选以前用过的"
@@ -41,7 +42,8 @@
       <div class="field">
         <span>标签</span>
         <TagSelector
-          v-model="form.tags as { name: string; type: string }[]"
+          ref="tagPicker"
+          v-model="tags"
           :exclude-types="['ingredient', 'taste', 'scene']"
         />
       </div>
@@ -82,6 +84,9 @@ const previewHint = ref('')
 const lastPreviewed = ref('')
 const coverId = ref<number | undefined>()
 const ingredients = ref<{ name: string; type: string }[]>([])
+const tags = ref<{ name: string; type: string }[]>([])
+const ingredientPicker = ref<{ commit: () => void } | null>(null)
+const tagPicker = ref<{ commit: () => void } | null>(null)
 const form = reactive<DishPayload>({
   name: '',
   status: 'want_to_cook',
@@ -90,7 +95,6 @@ const form = reactive<DishPayload>({
   source_platform: '',
   description: '',
   main_ingredients: '',
-  tags: [],
 })
 
 onMounted(async () => {
@@ -105,10 +109,10 @@ onMounted(async () => {
     description: dish.description,
     main_ingredients: dish.main_ingredients,
     difficulty: dish.difficulty,
-    tags: (dish.tags || [])
-      .filter((t) => t.type !== 'ingredient' && t.type !== 'taste' && t.type !== 'scene')
-      .map((t) => ({ name: t.name, type: t.type })),
   })
+  tags.value = (dish.tags || [])
+    .filter((t) => t.type !== 'ingredient' && t.type !== 'taste' && t.type !== 'scene')
+    .map((t) => ({ name: t.name, type: t.type }))
   ingredients.value = toIngredientTags(dish.main_ingredients)
 })
 
@@ -168,10 +172,12 @@ async function onSourceBlur() {
 async function save() {
   error.value = ''
   try {
+    ingredientPicker.value?.commit()
+    tagPicker.value?.commit()
     const payload = {
       ...form,
       main_ingredients: joinIngredientTags(ingredients.value),
-      tags: (form.tags || []).filter((t) => t.type !== 'ingredient' && t.type !== 'taste' && t.type !== 'scene'),
+      tags: tags.value.filter((t) => t.type !== 'ingredient' && t.type !== 'taste' && t.type !== 'scene'),
       cover_attachment_id: coverId.value,
     }
     const dish = isEdit.value ? await updateDish(id.value, payload) : await createDish(payload)

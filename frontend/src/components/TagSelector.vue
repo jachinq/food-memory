@@ -11,10 +11,10 @@
       :placeholder="placeholder"
       @input="draft = ($event.target as HTMLInputElement).value"
       @focus="load"
-      @keydown.enter.prevent="addDraft"
+      @keydown.enter.prevent="onEnter"
     />
     <div v-if="filtered.length" class="row" style="margin-top:8px">
-      <button v-for="t in filtered" :key="t.id" type="button" class="btn btn-ghost" @click="pick(t)">{{ t.name }}</button>
+      <button v-for="t in filtered" :key="t.id" type="button" class="btn btn-ghost" @mousedown.prevent @click="pick(t)">{{ t.name }}</button>
     </div>
   </div>
 </template>
@@ -56,12 +56,23 @@ onMounted(load)
 function add(name: string, type = props.type || 'custom') {
   name = name.trim()
   if (!name) return
-  emit('update:modelValue', [...props.modelValue, { name, type }])
+  const current = props.modelValue || []
+  if (current.some((t) => t.name === name && t.type === type)) {
+    draft.value = ''
+    return
+  }
+  emit('update:modelValue', [...current, { name, type }])
   draft.value = ''
 }
 function addDraft() { add(draft.value) }
+function onEnter(e: KeyboardEvent) {
+  if (e.isComposing) return
+  addDraft()
+}
 function pick(t: Tag) { add(t.name, t.type) }
 function remove(tag: { name: string; type: string }) {
-  emit('update:modelValue', props.modelValue.filter((t) => !(t.name === tag.name && t.type === tag.type)))
+  emit('update:modelValue', (props.modelValue || []).filter((t) => !(t.name === tag.name && t.type === tag.type)))
 }
+
+defineExpose({ commit: addDraft })
 </script>

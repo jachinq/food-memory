@@ -61,6 +61,6 @@ func (r *TagRepo) RecalcUsage(tx *gorm.DB, tagIDs []uint64) error {
 	}
 	return tx.Model(&model.Tag{}).Where("id IN ?", tagIDs).Updates(map[string]any{
 		"usage_count": gorm.Expr("(SELECT COUNT(1) FROM dish_tags WHERE dish_tags.tag_id = tags.id)"),
-		"updated_at":  gorm.Expr("NOW()"),
+		"updated_at":  gorm.Expr("CURRENT_TIMESTAMP"),
 	}).Error
 }
