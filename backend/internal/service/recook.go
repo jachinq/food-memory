@@ -14,7 +14,7 @@ import (
 
 var (
 	ErrRecookAlreadyActive = errors.New("已在清单")
-	ErrEmptyRecookComplete = errors.New("没有制作记录就不能完成计划")
+	ErrEmptyRecookComplete = errors.New("没有制作记录就不能完成待做项")
 )
 
 type RecookService struct {

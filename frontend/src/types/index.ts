@@ -132,7 +132,7 @@ export const STATUS_LABEL: Record<string, string> = {
   cooked: '已做',
   success: '做成功',
   failed: '翻车',
-  want_to_recook: '想再做',
+  want_to_recook: '待做',
   paused: '暂不做',
 }
 
@@ -143,10 +143,22 @@ export const RESULT_LABEL: Record<string, string> = {
 }
 
 export const HIDDEN_TAG_TYPES = new Set(['taste', 'scene'])
+export const MENU_TAG_HIDDEN = new Set(['taste', 'scene', 'ingredient'])
 
 export function displayTags(tags?: Tag[], limit?: number): Tag[] {
   const list = (tags || []).filter((t) => !HIDDEN_TAG_TYPES.has(String(t.type)))
   return limit != null ? list.slice(0, limit) : list
+}
+
+export function menuSectionTags(tags?: Tag[]): Tag[] {
+  const seen = new Set<string>()
+  const out: Tag[] = []
+  for (const tag of tags || []) {
+    if (MENU_TAG_HIDDEN.has(String(tag.type)) || seen.has(tag.name)) continue
+    seen.add(tag.name)
+    out.push(tag)
+  }
+  return out.sort((a, b) => b.usage_count - a.usage_count || a.name.localeCompare(b.name, 'zh'))
 }
 
 export function parseIngredientNames(raw?: string | null): string[] {

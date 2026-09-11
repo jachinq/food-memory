@@ -1,18 +1,18 @@
 <template>
   <div v-if="dish">
     <div class="toolbar">
-      <router-link class="muted" to="/dishes">← 回到菜品库</router-link>
+      <router-link class="muted" to="/dishes">← 回到菜牌</router-link>
       <div style="margin-left:auto" class="row">
-        <router-link class="btn btn-ghost" :to="`/dishes/${dish.id}/edit`">改这页</router-link>
+        <router-link class="btn btn-ghost" :to="`/dishes/${dish.id}/edit`">编辑</router-link>
         <router-link class="btn btn-primary" :to="`/dishes/${dish.id}/records/new`">记下一次</router-link>
-        <button class="btn btn-ghost" type="button" @click="markRecook">想再做</button>
+        <button class="btn btn-ghost" type="button" @click="markRecook">待做</button>
         <button class="btn btn-danger" type="button" @click="remove">删除</button>
       </div>
     </div>
     <section class="card hero-card">
       <div class="visual">
         <img v-if="dish.cover_image_url" :src="dish.cover_image_url" :alt="dish.name" @click="preview = dish.cover_image_url" />
-        <div v-else class="placeholder">菜</div>
+        <div v-else class="placeholder"></div>
       </div>
       <div class="copy">
         <div class="row">
@@ -20,15 +20,16 @@
           <span v-if="dish.rating" class="rating">{{ dish.rating }} 分</span>
         </div>
         <h1 class="section-title">{{ dish.name }}</h1>
+        <p v-if="dish.difficulty" class="muted">难度 {{ dish.difficulty }}</p>
         <p v-if="dish.description" class="dish-method">{{ dish.description }}</p>
         <p class="muted">做过 {{ dish.cook_count }} 次 · 最近 {{ formatDate(dish.last_cooked_at) || '还没有' }}</p>
         <div class="row" style="margin-top:8px">
-          <span v-for="tag in displayTags(dish.tags)" :key="tag.id" class="tag">{{ tag.name }}</span>
+          <span v-for="tag in menuSectionTags(dish.tags)" :key="tag.id" class="tag">{{ tag.name }}</span>
         </div>
       </div>
     </section>
-    <p class="section-kicker">Log</p>
-    <h2 class="section-title">制作记录</h2>
+    <p class="section-kicker">Served</p>
+    <h2 class="section-title">过往出品</h2>
     <EmptyState v-if="!dish.records?.length" title="这道菜还没有制作记录" text="做完后记得回来补一条。" />
     <CookRecordTimeline
       v-else
@@ -54,7 +55,7 @@ import { deleteRecord } from '../api/records'
 import { createRecookPlan } from '../api/recook'
 import { ApiError } from '../api/client'
 import type { Dish } from '../types'
-import { displayTags, formatDate } from '../types'
+import { menuSectionTags, formatDate } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 import CookRecordTimeline from '../components/CookRecordTimeline.vue'
 import EmptyState from '../components/EmptyState.vue'
@@ -72,7 +73,7 @@ async function markRecook() {
   if (!dish.value) return
   try {
     await createRecookPlan({ dish_id: dish.value.id })
-    alert('已加入复做清单')
+    alert('已加入待做清单')
     dish.value = await getDish(dish.value.id)
   } catch (e) {
     if (e instanceof ApiError && e.message === '已在清单') {

@@ -1,6 +1,6 @@
 <template>
   <form @submit.prevent="save">
-    <p class="section-kicker">{{ isEdit ? 'Revise' : 'New page' }}</p>
+    <p class="section-kicker">{{ isEdit ? 'Revise' : 'New' }}</p>
     <h1 class="section-title">{{ isEdit ? '改这道菜' : '记一道新菜' }}</h1>
     <section class="group">
       <h2>基础</h2>

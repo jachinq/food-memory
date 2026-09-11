@@ -28,15 +28,15 @@
       <label class="field"><span>下次注意</span><textarea v-model="form.next_improvement" rows="3" /></label>
       <label class="field"><span>备注</span><textarea v-model="form.notes" rows="3" /></label>
     </section>
-    <p v-if="!isEdit && suggest" class="group">这次不错。要把菜品标记为「做成功 / 想再做」吗？
+    <p v-if="!isEdit && suggest" class="group">这次不错。要把菜品标记为「做成功 / 待做」吗？
       <span class="row" style="margin-top:10px">
         <button type="button" class="btn btn-primary" @click="form.update_dish_status = 'success'">做成功</button>
-        <button type="button" class="btn btn-ghost" @click="form.update_dish_status = 'want_to_recook'">想再做</button>
+        <button type="button" class="btn btn-ghost" @click="form.update_dish_status = 'want_to_recook'">待做</button>
       </span>
     </p>
     <p v-if="error" class="muted">{{ error }}</p>
     <div class="form-actions">
-      <button class="btn btn-primary" type="submit">{{ isEdit ? '保存这次记录' : '写入这次记录' }}</button>
+      <button class="btn btn-primary" type="submit">{{ isEdit ? '保存这次记录' : '记下这次记录' }}</button>
     </div>
   </form>
 </template>

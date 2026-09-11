@@ -3,12 +3,12 @@
     <header class="topbar">
       <router-link class="brand" to="/">
         食忆
-        <small>KITCHEN LEDGER</small>
+        <small>HOUSE MENU</small>
       </router-link>
       <nav class="nav-links">
         <router-link to="/" active-class="is-prefix-active" exact-active-class="router-link-active">首页</router-link>
-        <router-link to="/dishes">菜品库</router-link>
-        <router-link to="/recook">复做清单</router-link>
+        <router-link to="/dishes">菜牌</router-link>
+        <router-link to="/recook">待做</router-link>
       </nav>
       <div class="topbar-search">
         <SearchBar v-model="keyword" placeholder="菜名、食材、标签…" @submit="goSearch" />
@@ -19,7 +19,7 @@
     <div class="page">
       <div class="mobile-only mobile-head">
         <router-link class="brand" to="/">食忆</router-link>
-        <router-link class="muted" to="/dishes">检索</router-link>
+        <router-link class="muted" to="/dishes">菜牌</router-link>
       </div>
       <router-view v-slot="{ Component }">
         <component :is="Component" />
@@ -32,13 +32,13 @@
         首页
       </router-link>
       <router-link to="/dishes">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="5" width="16" height="14"/><path d="M4 10h16M9 5v14"/></svg>
-        菜品
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="5" width="16" height="14" rx="1.5"/><path d="M4 10h16M9 5v14"/></svg>
+        菜牌
       </router-link>
       <button class="fab" type="button" aria-label="新增" @click="sheet = true">+</button>
       <router-link to="/recook">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 7h13v13H7z"/><path d="M4 4h13v3"/><path d="M10 12h6M10 16h4"/></svg>
-        复做
+        待做
       </router-link>
       <a href="#me" @click.prevent="sheet = true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3"/><path d="M5 19c1.4-3 3.8-4.5 7-4.5S17.6 16 19 19"/></svg>

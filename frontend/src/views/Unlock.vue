@@ -1,12 +1,12 @@
 <template>
   <main class="unlock-page">
     <div class="unlock-card">
-      <h1 class="brand">食忆<small>PRIVATE KITCHEN</small></h1>
-      <p class="muted">这本账上了锁。输入口令，掀开封面。</p>
+      <h1 class="brand">食忆<small>HOUSE MENU</small></h1>
+      <p class="muted">厨房上了锁。输入口令，看菜牌。</p>
       <form @submit.prevent="unlock">
         <label class="field"><span>访问口令</span><input v-model="token" type="password" autocomplete="current-password" /></label>
         <p v-if="error" class="muted">{{ error }}</p>
-        <button class="btn btn-primary" type="submit">掀开</button>
+        <button class="btn btn-primary" type="submit">看菜牌</button>
       </form>
     </div>
   </main>

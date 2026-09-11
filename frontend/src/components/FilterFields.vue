@@ -32,7 +32,7 @@
       <div class="chip-row">
         <button type="button" class="chip" :class="{ on: !success }" :aria-pressed="!success" @click="emit('update:success', '')">全部</button>
         <button type="button" class="chip" :class="{ on: success === 'true' }" :aria-pressed="success === 'true'" @click="emit('update:success', 'true')">做成功</button>
-        <button type="button" class="chip" :class="{ on: success === 'false' }" :aria-pressed="success === 'false'" @click="emit('update:success', 'false')">其他</button>
+        <button type="button" class="chip" :class="{ on: success === 'false' }" :aria-pressed="success === 'false'" @click="emit('update:success', 'false')">未成功</button>
       </div>
     </div>
     <button type="button" class="btn btn-ghost" @click="clear">一键清空</button>

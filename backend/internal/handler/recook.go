@@ -62,7 +62,7 @@ func (h *RecookHandler) Update(c *gin.Context) {
 	plan, err := h.svc.Update(id, in)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			NotFound(c, "复做计划不存在")
+			NotFound(c, "待做项不存在")
 			return
 		}
 		BadRequest(c, err.Error())
@@ -79,7 +79,7 @@ func (h *RecookHandler) Complete(c *gin.Context) {
 	plan, err := h.svc.Complete(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			NotFound(c, "复做计划不存在")
+			NotFound(c, "待做项不存在")
 			return
 		}
 		if errors.Is(err, service.ErrEmptyRecookComplete) {
@@ -99,7 +99,7 @@ func (h *RecookHandler) Cancel(c *gin.Context) {
 	}
 	if err := h.svc.Cancel(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			NotFound(c, "复做计划不存在")
+			NotFound(c, "待做项不存在")
 			return
 		}
 		ServerError(c, err.Error())
@@ -115,7 +115,7 @@ func (h *RecookHandler) Delete(c *gin.Context) {
 	}
 	if err := h.svc.Delete(id); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			NotFound(c, "复做计划不存在")
+			NotFound(c, "待做项不存在")
 			return
 		}
 		ServerError(c, err.Error())

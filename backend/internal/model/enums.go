@@ -63,7 +63,7 @@ func StatusLabel(s string) string {
 	case StatusFailed:
 		return "翻车"
 	case StatusWantToRecook:
-		return "想再做"
+		return "待做"
 	case StatusPaused:
 		return "暂不做"
 	default:

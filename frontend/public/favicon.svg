@@ -1,6 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" fill="#1c140c"/>
-  <rect x="8" y="10" width="48" height="44" fill="#ead9b8"/>
-  <path d="M8 18h48" stroke="#1c140c" stroke-width="1.2" opacity=".35"/>
-  <text x="32" y="42" text-anchor="middle" font-size="26" fill="#9c2b16" font-family="serif">忆</text>
+  <rect width="64" height="64" rx="10" fill="#1a1410"/>
+  <rect x="10" y="12" width="44" height="40" rx="4" fill="#f7f1e8"/>
+  <path d="M18 22h28M18 32h20M18 42h16" stroke="#b42318" stroke-width="2.4" stroke-linecap="round"/>
 </svg>

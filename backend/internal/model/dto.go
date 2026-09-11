@@ -39,6 +39,7 @@ type DishListQuery struct {
 	Keyword  string
 	Status   string
 	Tag      string
+	Untagged *bool
 	Cooked   *bool
 	Success  *bool
 	Page     int

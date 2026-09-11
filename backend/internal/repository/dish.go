@@ -65,7 +65,13 @@ func (r *DishRepo) List(q model.DishListQuery) ([]model.Dish, int64, error) {
 	if q.Status != "" {
 		db = db.Where("status = ?", q.Status)
 	}
-	if q.Tag != "" {
+	if q.Untagged != nil && *q.Untagged {
+		db = db.Where(`id NOT IN (
+			SELECT dt.dish_id FROM dish_tags dt
+			JOIN tags t ON t.id = dt.tag_id AND t.deleted_at IS NULL
+			WHERE t.type NOT IN (?, ?, ?)
+		)`, model.TagIngredient, model.TagTaste, model.TagScene)
+	} else if q.Tag != "" {
 		tagLike := "%" + q.Tag + "%"
 		db = db.Where(`id IN (
 			SELECT dt.dish_id FROM dish_tags dt

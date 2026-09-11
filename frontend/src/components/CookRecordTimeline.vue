@@ -9,7 +9,7 @@
           alt=""
           @click="$emit('preview', item.photos![0].file_url)"
         />
-        <div v-else class="placeholder timeline-thumb">记</div>
+          <div v-else class="placeholder timeline-thumb"></div>
       </div>
       <div>
         <div class="row">

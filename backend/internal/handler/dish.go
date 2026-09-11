@@ -27,6 +27,9 @@ func (h *DishHandler) List(c *gin.Context) {
 		Page:     atoiDefault(c.Query("page"), 1),
 		PageSize: atoiDefault(c.Query("pageSize"), 20),
 	}
+	if v, ok := parseBoolQuery(c.Query("untagged")); ok {
+		q.Untagged = &v
+	}
 	if v, ok := parseBoolQuery(c.Query("cooked")); ok {
 		q.Cooked = &v
 	}
