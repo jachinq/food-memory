@@ -59,11 +59,13 @@ import { menuSectionTags, formatDate } from '../types'
 import StatusBadge from '../components/StatusBadge.vue'
 import CookRecordTimeline from '../components/CookRecordTimeline.vue'
 import EmptyState from '../components/EmptyState.vue'
+import { useFeedback } from '../stores/feedback'
 
 const route = useRoute()
 const router = useRouter()
 const dish = ref<Dish | null>(null)
 const preview = ref('')
+const feedback = useFeedback()
 
 onMounted(async () => {
   dish.value = await getDish(Number(route.params.id))
@@ -73,31 +75,33 @@ async function markRecook() {
   if (!dish.value) return
   try {
     await createRecookPlan({ dish_id: dish.value.id })
-    alert('已加入待做清单')
+    feedback.notice('已加入待做清单', 'ok')
     dish.value = await getDish(dish.value.id)
   } catch (e) {
     if (e instanceof ApiError && e.message === '已在清单') {
-      alert('已在清单')
+      feedback.notice('已在清单')
       return
     }
-    alert(e instanceof Error ? e.message : '加入失败')
+    feedback.notice(e instanceof Error ? e.message : '加入失败', 'fail')
   }
 }
 
 async function removeRecord(id: number) {
   if (!dish.value) return
-  if (!confirm('删除这条制作记录？次数和评分会按剩下的记录重算。整道菜不会被删。')) return
+  const ok = await feedback.confirm('删除这条制作记录？次数和评分会按剩下的记录重算。整道菜不会被删。')
+  if (!ok) return
   try {
     await deleteRecord(id)
     dish.value = await getDish(dish.value.id)
   } catch (e) {
-    alert(e instanceof Error ? e.message : '删除失败')
+    feedback.notice(e instanceof Error ? e.message : '删除失败', 'fail')
   }
 }
 
 async function remove() {
   if (!dish.value) return
-  if (!confirm('删除后菜品和制作记录都会进入回收状态，确定吗？')) return
+  const ok = await feedback.confirm('删除后菜品和制作记录都会进入回收状态，确定吗？')
+  if (!ok) return
   await deleteDish(dish.value.id)
   router.push('/dishes')
 }

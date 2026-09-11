@@ -55,6 +55,7 @@
         </div>
       </div>
     </Transition>
+    <FeedbackLayer />
   </div>
 </template>
 
@@ -62,6 +63,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import SearchBar from '../components/SearchBar.vue'
+import FeedbackLayer from '../components/FeedbackLayer.vue'
 
 const router = useRouter()
 const keyword = ref('')
